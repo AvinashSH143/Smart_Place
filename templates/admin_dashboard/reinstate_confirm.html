@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Reinstate Student — {{ student.full_name }} — Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Header -->
+  <div class="flex items-center space-x-4 mb-8">
+    <a href="{% url 'admin_dashboard:discipline_list' %}"
+       class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    </a>
+    <div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight">Reinstate Student</h1>
+      <p class="text-xs text-slate-400 mt-0.5">Restore full placement access for {{ student.full_name }}</p>
+    </div>
+  </div>
+
+  <!-- Success Intent Banner -->
+  <div class="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-start space-x-4 mb-8">
+    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+      <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+    </div>
+    <div>
+      <p class="text-sm font-bold text-emerald-300">Confirm Reinstatement</p>
+      <p class="text-xs text-emerald-400/80 mt-1 leading-relaxed">
+        This will immediately clear the student's debarment status and restore full eligibility for all campus placement drives.
+        The disciplinary record will be updated with your reinstatement notes and timestamped.
+      </p>
+    </div>
+  </div>
+
+  <!-- Student & Incident Info -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 space-y-4">
+    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Student Being Reinstated</h2>
+
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+        <span class="text-indigo-300 font-extrabold text-lg">{{ student.full_name|first|upper }}</span>
+      </div>
+      <div>
+        <p class="text-base font-bold text-white">{{ student.full_name }}</p>
+        <p class="text-xs text-slate-400">{{ student.branch }} — Year {{ student.year_of_study }} — CGPA {{ student.cgpa }}</p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-800 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <span class="text-xs text-slate-500">Incident Category</span>
+        <p class="text-sm font-medium text-slate-200 mt-0.5">{{ record.get_incident_category_display }}</p>
+      </div>
+      <div>
+        <span class="text-xs text-slate-500">Incident Date</span>
+        <p class="text-sm font-medium text-slate-200 mt-0.5">{{ record.incident_date }}</p>
+      </div>
+      {% if record.debarment_start %}
+      <div>
+        <span class="text-xs text-slate-500">Debarment Started</span>
+        <p class="text-sm font-medium text-slate-200 mt-0.5">{{ record.debarment_start }}</p>
+      </div>
+      {% endif %}
+      {% if record.placement_restrictions %}
+      <div class="sm:col-span-2">
+        <span class="text-xs text-slate-500">Active Restrictions Being Cleared</span>
+        <p class="text-xs text-rose-300 mt-1 leading-relaxed">{{ record.placement_restrictions }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Reinstatement Form -->
+  <form method="POST" novalidate>
+    {% csrf_token %}
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+        Reinstatement Notes <span class="text-slate-500 normal-case font-normal">(required for audit trail)</span>
+      </label>
+      <textarea
+        name="reinstatement_notes"
+        rows="4"
+        required
+        placeholder="State the reason for reinstatement — e.g. appeal upheld, penalty period expired, error in record, committee review..."
+        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+      ></textarea>
+      <p class="text-xs text-slate-500">These notes will be appended to the disciplinary record with a timestamp and cannot be edited afterward.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between mt-6">
+      <a href="{% url 'admin_dashboard:discipline_list' %}"
+         class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition">
+        Cancel — Do Not Reinstate
+      </a>
+      <button type="submit"
+              class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/25 transition flex items-center space-x-2">
+        <i data-lucide="shield-check" class="w-4 h-4"></i>
+        <span>Confirm Reinstatement</span>
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

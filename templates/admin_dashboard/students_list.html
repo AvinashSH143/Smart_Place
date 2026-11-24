@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Registered Students — PlacerAI Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Header -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                <span>Candidate Directorate</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Registered Student Cohort
+            </h1>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+                Browse, search, and audit student profiles, academic scores, and disciplinary records across all engineering departments.
+            </p>
+        </div>
+
+        <div class="text-xs text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-white/5 flex items-center space-x-3">
+            <div>
+                <span class="text-slate-500 block text-[10px] uppercase font-semibold">Total Cohort</span>
+                <span class="text-white font-extrabold text-base">{{ students.count }} Students</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-4 shadow-xl">
+        <form method="GET" action="{% url 'admin_dashboard:students_list' %}" class="flex flex-col sm:flex-row gap-3 items-center">
+            <div class="relative flex-1 w-full">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search by student name, email, or username..." class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs transition">
+            </div>
+
+            <div class="w-full sm:w-64">
+                <select name="branch" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Branches</option>
+                    {% for b_val, b_label in branch_choices %}
+                        <option value="{{ b_val }}" {% if branch_filter == b_val %}selected{% endif %}>{{ b_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-full sm:w-44">
+                <select name="status" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Standing</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Good Standing</option>
+                    <option value="debarred" {% if status_filter == 'debarred' %}selected{% endif %}>Debarred Only</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-1.5 flex-shrink-0">
+                <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                <span>Filter</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Students Table -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-white/10 text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-3">Student Name & Email</th>
+                        <th class="py-3 px-3">Branch & Year</th>
+                        <th class="py-3 px-3 text-center">CGPA</th>
+                        <th class="py-3 px-3 text-center">Academic Score</th>
+                        <th class="py-3 px-3 text-center">Disciplinary Standing</th>
+                        <th class="py-3 px-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-slate-300">
+                    {% for st in students %}
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-4 px-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white font-bold text-xs flex items-center justify-center shadow-md flex-shrink-0">
+                                        {{ st.initials }}
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'admin_dashboard:student_detail' st.id %}" class="font-bold text-white hover:text-indigo-400 transition text-sm">
+                                            {{ st.full_name }}
+                                        </a>
+                                        <div class="text-[11px] text-slate-400">{{ st.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-3">
+                                <div class="font-semibold text-white">{{ st.branch }}</div>
+                                <div class="text-[10px] text-slate-400">{{ st.get_year_of_study_display }}</div>
+                            </td>
+                            <td class="py-4 px-3 text-center whitespace-nowrap">
+                                <span class="font-extrabold text-white text-sm">{{ st.cgpa|floatformat:2 }}</span>
+                                <span class="text-[10px] text-slate-500">/10</span>
+                            </td>
+                            <td class="py-4 px-3 text-center whitespace-nowrap">
+                                <span class="font-extrabold text-indigo-400 text-sm">{{ st.academic_score }}</span>
+                                <span class="text-[10px] text-slate-500">/100</span>
+                            </td>
+                            <td class="py-4 px-3 text-center whitespace-nowrap">
+                                {% if st.is_debarred %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                        Debarred
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Good Standing
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-3 text-right whitespace-nowrap">
+                                <a href="{% url 'admin_dashboard:student_detail' st.id %}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 text-xs font-semibold transition inline-flex items-center space-x-1">
+                                    <span>Inspect Profile</span>
+                                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-500">
+                                No students matched your active filter criteria.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

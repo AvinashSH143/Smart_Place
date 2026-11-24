@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Submission Evaluation — {{ submission.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Breadcrumb / Navigation -->
+    <div class="flex items-center space-x-2 text-xs text-slate-400">
+        <a href="{% url 'academics:uploads' %}" class="hover:text-indigo-400 flex items-center space-x-1">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Uploads</span>
+        </a>
+        <span>/</span>
+        <span class="text-slate-200 font-medium truncate max-w-sm">{{ submission.title }}</span>
+    </div>
+
+    <!-- Main Header Card -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-2">
+            <div class="flex items-center space-x-3">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                    {{ submission.get_category_display }}
+                </span>
+                {% if submission.status == 'APPROVED' %}
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        <span>Approved</span>
+                    </span>
+                {% elif submission.status == 'PENDING' %}
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center space-x-1">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                        <span>Pending Review</span>
+                    </span>
+                {% else %}
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center space-x-1">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                        <span>{{ submission.get_status_display }}</span>
+                    </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                {{ submission.title }}
+            </h1>
+
+            <div class="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                <span>Submitted on {{ submission.created_at|date:"F d, Y - h:i A" }}</span>
+                {% if submission.related_skill %}
+                    <span>&bull;</span>
+                    <span class="text-indigo-400">Linked Skill: {{ submission.related_skill.name }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3 self-start md:self-auto">
+            <a href="{% url 'academics:secure_download' submission.id %}" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold border border-white/10 transition flex items-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4 text-indigo-400"></i>
+                <span>Download Attachment</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Description & Scope -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Submission Description & Scope</h3>
+        <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+            {{ submission.description }}
+        </p>
+    </div>
+
+    <!-- Evaluation Rubric Card -->
+    {% if submission.evaluation %}
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/5 gap-2">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="award" class="w-5 h-5 text-indigo-400"></i>
+                        <span>Official Evaluation Rubric Breakdown</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Evaluated on {{ submission.evaluation.evaluated_at|date:"F d, Y" }} by {{ submission.evaluation.evaluated_by.get_full_name|default:submission.evaluation.evaluated_by.username }}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-extrabold text-white">{{ submission.evaluation.total_marks }}<span class="text-xs text-slate-400 font-normal"> / 100</span></div>
+                    <div class="text-[10px] text-emerald-400 font-semibold uppercase">Total Awarded Score</div>
+                </div>
+            </div>
+
+            <!-- Rubric Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-white/10 text-slate-400 uppercase tracking-wider">
+                            <th class="py-3 px-2">Evaluation Criteria</th>
+                            <th class="py-3 px-2 text-center">Maximum Marks</th>
+                            <th class="py-3 px-2 text-center">Marks Awarded</th>
+                            <th class="py-3 px-2 text-right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-slate-300">
+                        <tr>
+                            <td class="py-3 px-2">
+                                <div class="font-bold text-white">Relevance</div>
+                                <div class="text-[11px] text-slate-400">Direct alignment with curriculum, engineering rigor, and declared specialization.</div>
+                            </td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-semibold">20</td>
+                            <td class="py-3 px-2 text-center font-bold text-white text-sm">{{ submission.evaluation.marks_relevance }}</td>
+                            <td class="py-3 px-2 text-right font-semibold text-indigo-400">
+                                {% widthratio submission.evaluation.marks_relevance 20 100 %}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-2">
+                                <div class="font-bold text-white">Quality of Content</div>
+                                <div class="text-[11px] text-slate-400">Depth of documentation, architectural structure, correctness, and completeness.</div>
+                            </td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-semibold">30</td>
+                            <td class="py-3 px-2 text-center font-bold text-white text-sm">{{ submission.evaluation.marks_quality }}</td>
+                            <td class="py-3 px-2 text-right font-semibold text-indigo-400">
+                                {% widthratio submission.evaluation.marks_quality 30 100 %}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-2">
+                                <div class="font-bold text-white">Practical Application</div>
+                                <div class="text-[11px] text-slate-400">Demonstrated code implementation, live deployment, test coverage, or industrial utility.</div>
+                            </td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-semibold">25</td>
+                            <td class="py-3 px-2 text-center font-bold text-white text-sm">{{ submission.evaluation.marks_practical }}</td>
+                            <td class="py-3 px-2 text-right font-semibold text-indigo-400">
+                                {% widthratio submission.evaluation.marks_practical 25 100 %}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-2">
+                                <div class="font-bold text-white">Originality and Presentation</div>
+                                <div class="text-[11px] text-slate-400">Independent intellectual contribution, clean presentation, and professional clarity.</div>
+                            </td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-semibold">25</td>
+                            <td class="py-3 px-2 text-center font-bold text-white text-sm">{{ submission.evaluation.marks_originality }}</td>
+                            <td class="py-3 px-2 text-right font-semibold text-indigo-400">
+                                {% widthratio submission.evaluation.marks_originality 25 100 %}%
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t border-white/10 font-bold text-sm text-white">
+                            <td class="py-4 px-2">Total Evaluated Score</td>
+                            <td class="py-4 px-2 text-center text-slate-400">100</td>
+                            <td class="py-4 px-2 text-center text-indigo-400 text-base">{{ submission.evaluation.total_marks }}</td>
+                            <td class="py-4 px-2 text-right text-emerald-400">{{ submission.evaluation.total_marks }}%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Feedback -->
+            <div class="bg-slate-950/70 border border-white/5 rounded-xl p-5 space-y-2">
+                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider flex items-center space-x-1.5">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>Administrator Feedback & Recommendations</span>
+                </span>
+                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                    {{ submission.evaluation.feedback }}
+                </p>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-8 text-center space-y-3">
+            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">Evaluation in Progress</h3>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">
+                This document is currently queued in the administrative review board. Once evaluated according to our scoring rubric, your marks and feedback will appear here automatically.
+            </p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

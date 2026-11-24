@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Disciplinary Incident — Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Header -->
+  <div class="flex items-center space-x-4 mb-8">
+    <a href="{% url 'admin_dashboard:discipline_list' %}"
+       class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    </a>
+    <div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight">{{ title }}</h1>
+      <p class="text-xs text-slate-400 mt-0.5">Record a formal disciplinary incident against a student.</p>
+    </div>
+  </div>
+
+  <!-- Warning Banner -->
+  <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-start space-x-3 mb-8">
+    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0"></i>
+    <div class="text-xs text-amber-300 leading-relaxed">
+      <strong class="font-semibold">Important:</strong> Disciplinary records are formal institutional documents. Ensure all information is accurate and factual. This record will be visible to the student and may affect their placement eligibility.
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="POST" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6">
+
+      <!-- Student -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Student *</label>
+        {{ form.student }}
+        {% if form.student.errors %}
+          <p class="mt-1 text-xs text-rose-400">{{ form.student.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Incident Category + Date -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Incident Category *</label>
+          {{ form.incident_category }}
+          {% if form.incident_category.errors %}
+            <p class="mt-1 text-xs text-rose-400">{{ form.incident_category.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Incident Date *</label>
+          {{ form.incident_date }}
+          {% if form.incident_date.errors %}
+            <p class="mt-1 text-xs text-rose-400">{{ form.incident_date.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Description of Incident *</label>
+        {{ form.description }}
+        <p class="mt-1 text-xs text-slate-500">Provide an objective, factual account. Avoid subjective language.</p>
+        {% if form.description.errors %}
+          <p class="mt-1 text-xs text-rose-400">{{ form.description.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Supporting Evidence -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Supporting Evidence (optional)</label>
+        {{ form.supporting_evidence }}
+        <p class="mt-1 text-xs text-slate-500">Upload any documents, screenshots, or related files (PDF, JPG, PNG, DOCX).</p>
+        {% if form.supporting_evidence.errors %}
+          <p class="mt-1 text-xs text-rose-400">{{ form.supporting_evidence.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Admin Remarks -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Initial Admin Remarks</label>
+        {{ form.admin_remarks }}
+        {% if form.admin_remarks.errors %}
+          <p class="mt-1 text-xs text-rose-400">{{ form.admin_remarks.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Record Status *</label>
+        {{ form.status }}
+        {% if form.status.errors %}
+          <p class="mt-1 text-xs text-rose-400">{{ form.status.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+          {% for error in form.non_field_errors %}
+            <p class="text-xs text-rose-400">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between mt-6">
+      <a href="{% url 'admin_dashboard:discipline_list' %}"
+         class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition">
+        Cancel
+      </a>
+      <button type="submit"
+              class="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-600/25 transition flex items-center space-x-2">
+        <i data-lucide="file-warning" class="w-4 h-4"></i>
+        <span>Document Incident</span>
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

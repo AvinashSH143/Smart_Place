@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile — PlacerAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Profile Card -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <!-- Profile Avatar / Initials -->
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}" class="w-full h-full object-cover rounded-2xl">
+                {% else %}
+                    {{ student.initials }}
+                {% endif %}
+            </div>
+
+            <div class="space-y-1">
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-2xl font-extrabold text-white">{{ student.full_name }}</h1>
+                    {% if student.is_debarred %}
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            Debarred
+                        </span>
+                    {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            Good Standing
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                    <span>{{ student.email }}</span>
+                    <span>&bull;</span>
+                    <span>{{ student.branch }}</span>
+                    <span>&bull;</span>
+                    <span>{{ student.get_year_of_study_display }}</span>
+                    {% if student.contact_phone %}
+                        <span>&bull;</span>
+                        <span>{{ student.contact_phone }}</span>
+                    {% endif %}
+                </div>
+                {% if student.bio %}
+                    <p class="text-xs text-slate-300 pt-1 max-w-2xl leading-relaxed">
+                        {{ student.bio }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <button type="button" onclick="document.getElementById('edit-profile-modal').classList.remove('hidden')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold border border-white/10 transition flex items-center space-x-2 self-start md:self-auto">
+            <i data-lucide="edit-3" class="w-4 h-4 text-indigo-400"></i>
+            <span>Edit Profile</span>
+        </button>
+    </div>
+
+    <!-- Academic Overview Section -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Academic Score</div>
+            <div class="text-2xl font-extrabold text-white mt-2">{{ student.academic_score }}<span class="text-xs text-slate-500 font-normal">/100</span></div>
+            <div class="text-[11px] text-indigo-400 mt-1">Evaluated Submissions</div>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Verified Certs</div>
+            <div class="text-2xl font-extrabold text-sky-400 mt-2">{{ approved_certs }}</div>
+            <div class="text-[11px] text-slate-400 mt-1">Credentials verified</div>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved Projects</div>
+            <div class="text-2xl font-extrabold text-emerald-400 mt-2">{{ approved_projects }}</div>
+            <div class="text-[11px] text-slate-400 mt-1">Code & demo audited</div>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Verified Skills</div>
+            <div class="text-2xl font-extrabold text-indigo-400 mt-2">{{ approved_skills }}</div>
+            <div class="text-[11px] text-slate-400 mt-1">Confirmed skills</div>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Review</div>
+            <div class="text-2xl font-extrabold text-amber-400 mt-2">{{ pending_submissions }}</div>
+            <div class="text-[11px] text-slate-400 mt-1">Awaiting admin audit</div>
+        </div>
+    </div>
+
+    <!-- Strength Analysis & 5-Dimension Radar -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Radar Chart Column -->
+        <div class="lg:col-span-5 bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl">
+            <h3 class="text-base font-bold text-white mb-1 flex items-center space-x-2">
+                <i data-lucide="radar" class="w-4 h-4 text-indigo-400"></i>
+                <span>Competency Radar Chart</span>
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Five dimensions of evaluated student performance.</p>
+
+            <div class="relative w-full aspect-square max-h-[300px] flex items-center justify-center">
+                <canvas id="profileRadarChart"></canvas>
+            </div>
+
+            <div class="mt-4 p-4 rounded-xl bg-slate-950/60 border border-white/5 text-xs space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Overall Strength Rating:</span>
+                    <span class="font-extrabold text-indigo-400 text-sm">{{ strength_analysis.overall_strength }}%</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px]">
+                    <span class="text-slate-400">Assessment Status:</span>
+                    {% if strength_analysis.is_provisional %}
+                        <span class="text-amber-400 font-semibold">Provisional ({{ strength_analysis.assessed_count }}/5 assessed)</span>
+                    {% else %}
+                        <span class="text-emerald-400 font-semibold">Fully Assessed (5/5)</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dimension Scores & Expandable Breakdown -->
+        <div class="lg:col-span-7 space-y-6">
+            <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Dimension Explanations & Criteria</span>
+                </h3>
+
+                <div class="space-y-3">
+                    {% for dim in strength_analysis.dimensions %}
+                        <details class="bg-slate-950/70 border border-white/5 rounded-xl overflow-hidden group">
+                            <summary class="p-4 flex items-center justify-between cursor-pointer list-none hover:bg-slate-800/40 transition">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-bold">
+                                        {{ dim.weight_pct }}%
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white">{{ dim.name }}</h4>
+                                        <div class="text-[10px] text-slate-400">Weight: {{ dim.weight_pct }}% of overall score</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    {% if dim.score is not None %}
+                                        <span class="text-sm font-extrabold text-white">{{ dim.score }}/100</span>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            Assessed
+                                        </span>
+                                    {% else %}
+                                        <span class="text-xs font-medium text-slate-500">Not assessed</span>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-white/5">
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 pt-2 border-t border-white/5 text-xs text-slate-300 space-y-2">
+                                <p>{{ dim.description }}</p>
+                                {% if dim.score is None %}
+                                    <p class="text-amber-400 text-[11px]">
+                                        * To establish this score, upload related coursework or project submissions for administrator review.
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </details>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Placement Strength & Improvement Guidance -->
+            <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Placement Strength & Improvement Guidance</span>
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-slate-950/60 p-4 rounded-xl border border-white/5 space-y-1">
+                        <span class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Strongest Skill Category</span>
+                        <div class="text-white font-bold text-sm">{{ strength_analysis.strongest_dimension.name|default:"Not Yet Established" }}</div>
+                        <p class="text-slate-400 text-[11px]">Consistently high scoring in evaluated work.</p>
+                    </div>
+                    <div class="bg-slate-950/60 p-4 rounded-xl border border-white/5 space-y-1">
+                        <span class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Area Needing Improvement</span>
+                        <div class="text-white font-bold text-sm">{{ strength_analysis.weakest_dimension.name|default:"Not Yet Established" }}</div>
+                        <p class="text-slate-400 text-[11px]">Target this domain to raise drive match scores.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <span class="text-xs font-semibold text-slate-300">Actionable Next Steps:</span>
+                    <ul class="space-y-1.5 text-xs text-slate-400">
+                        {% for rec in strength_analysis.recommendations %}
+                            <li class="flex items-start space-x-2">
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-indigo-400 mt-0.5 flex-shrink-0"></i>
+                                <span>{{ rec }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="p-3 bg-slate-950/60 border border-white/5 rounded-xl text-[11px] text-slate-500">
+                    <strong>Note:</strong> Matching scores and strength analyses are diagnostic tools to assist in placement preparation. They represent qualification alignment and do not constitute a guaranteed placement offer.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Skills Management Section -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="code" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Declared & Verified Skills</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Add your core technical competencies. Skills become fully verified once audited via evaluated academic submissions.</p>
+            </div>
+
+            <!-- Add Skill Form Inline / Modal -->
+            <form method="POST" action="{% url 'students:add_skill' %}" class="flex flex-wrap items-center gap-2">
+                {% csrf_token %}
+                <div class="w-48">
+                    {{ skill_form.skill }}
+                </div>
+                <div class="w-40">
+                    {{ skill_form.proficiency }}
+                </div>
+                <button type="submit" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center space-x-1.5">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span>Add Skill</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Skills Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for ss in declared_skills %}
+                <div class="bg-slate-950/70 border border-white/5 hover:border-white/15 rounded-xl p-4 flex items-center justify-between transition">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-bold text-white">{{ ss.skill.name }}</span>
+                            {% if ss.is_verified %}
+                                <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md flex items-center space-x-1">
+                                    <i data-lucide="check" class="w-3 h-3"></i>
+                                    <span>Verified</span>
+                                </span>
+                            {% else %}
+                                <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md">
+                                    Unverified
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="text-[11px] text-slate-400">
+                            {{ ss.skill.get_category_display }} &bull; {{ ss.get_proficiency_display }}
+                        </div>
+                    </div>
+
+                    <a href="{% url 'students:delete_skill' ss.id %}" onclick="return confirm('Remove skill {{ ss.skill.name }} from profile?')" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg transition" title="Delete Skill">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-span-3 text-center py-8 text-xs text-slate-500">
+                    No skills declared yet. Select a skill above to start building your technical profile.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 class="text-base font-bold text-white">Edit Personal Information</h3>
+            <button type="button" onclick="document.getElementById('edit-profile-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'students:profile' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Full Name</label>
+                {{ form.full_name }}
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Branch</label>
+                    {{ form.branch }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Academic Year</label>
+                    {{ form.year_of_study }}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">CGPA (0 - 10)</label>
+                    {{ form.cgpa }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Contact Phone</label>
+                    {{ form.contact_phone }}
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Bio / Aspirations</label>
+                {{ form.bio }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Profile Picture</label>
+                {{ form.profile_picture }}
+            </div>
+            <div class="flex justify-end space-x-3 pt-3 border-t border-white/5">
+                <button type="button" onclick="document.getElementById('edit-profile-modal').classList.add('hidden')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-medium hover:bg-slate-700">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-500 shadow-lg shadow-indigo-600/25">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const labels = {{ radar_labels_json|safe }};
+        const dataValues = {{ radar_data_json|safe }};
+
+        const ctx = document.getElementById('profileRadarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Evaluated Competency',
+                    data: dataValues,
+                    backgroundColor: 'rgba(99, 102, 241, 0.25)',
+                    borderColor: 'rgba(99, 102, 241, 0.9)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#818cf8',
+                    pointBorderColor: '#ffffff',
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                        pointLabels: {
+                            color: '#94a3b8',
+                            font: { size: 10, family: 'Inter', weight: '500' }
+                        },
+                        ticks: { display: false, min: 0, max: 100 },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

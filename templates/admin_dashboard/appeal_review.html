@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Appeal — {{ appeal.student.full_name }} — Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- Header -->
+  <div class="flex items-center space-x-4 mb-8">
+    <a href="{% url 'admin_dashboard:discipline_list' %}"
+       class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    </a>
+    <div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight">Review Disciplinary Appeal</h1>
+      <p class="text-xs text-slate-400 mt-0.5">Filed by {{ appeal.student.full_name }} — submitted {{ appeal.submitted_at|date:"d M Y" }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+    <!-- Left: Appeal Details -->
+    <div class="lg:col-span-3 space-y-6">
+
+      <!-- Student Info -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Student Identity</h2>
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+            <span class="text-indigo-300 font-extrabold text-lg">{{ appeal.student.full_name|first|upper }}</span>
+          </div>
+          <div>
+            <p class="text-base font-bold text-white">{{ appeal.student.full_name }}</p>
+            <p class="text-xs text-slate-400">{{ appeal.student.branch }} — Year {{ appeal.student.year_of_study }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">CGPA: {{ appeal.student.cgpa }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incident Info -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Original Incident</h2>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">Category</span>
+            <span class="text-xs font-semibold text-amber-300">{{ appeal.record.get_incident_category_display }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">Incident Date</span>
+            <span class="text-xs text-slate-300">{{ appeal.record.incident_date }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">Record Status</span>
+            <span class="text-xs font-semibold
+              {% if appeal.record.status == 'CONFIRMED' %}text-rose-400
+              {% elif appeal.record.status == 'DISMISSED' %}text-emerald-400
+              {% else %}text-amber-400{% endif %}">
+              {{ appeal.record.get_status_display }}
+            </span>
+          </div>
+          {% if appeal.record.is_debarred %}
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">Debarment</span>
+            <span class="text-xs font-bold text-rose-400">Active Debarment</span>
+          </div>
+          {% endif %}
+          <div class="pt-3 border-t border-slate-800">
+            <span class="text-xs text-slate-500">Incident Description</span>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">{{ appeal.record.description }}</p>
+          </div>
+          {% if appeal.record.admin_decision_notes %}
+          <div class="pt-3 border-t border-slate-800">
+            <span class="text-xs text-slate-500">Admin Decision Notes</span>
+            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed whitespace-pre-line">{{ appeal.record.admin_decision_notes }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Student Appeal Statement -->
+      <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6">
+        <div class="flex items-center space-x-2 mb-4">
+          <i data-lucide="message-square-quote" class="w-4 h-4 text-indigo-400"></i>
+          <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Student's Appeal Statement</h2>
+        </div>
+        <blockquote class="text-sm text-slate-200 leading-relaxed italic border-l-2 border-indigo-500/40 pl-4">
+          "{{ appeal.appeal_statement }}"
+        </blockquote>
+        {% if appeal.supporting_documents %}
+        <div class="mt-4 pt-4 border-t border-slate-800">
+          <span class="text-xs text-slate-500">Supporting Documents:</span>
+          <a href="{{ appeal.supporting_documents.url }}" target="_blank"
+             class="ml-2 text-xs text-indigo-400 hover:text-indigo-300 underline underline-offset-2">
+            View Document
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right: Review Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sticky top-24">
+        <h2 class="text-sm font-bold text-white mb-6">Administrative Decision</h2>
+
+        <form method="POST" novalidate class="space-y-5">
+          {% csrf_token %}
+
+          <!-- Decision -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Decision *</label>
+            {{ form.decision }}
+            {% if form.decision.errors %}
+              <p class="mt-1 text-xs text-rose-400">{{ form.decision.errors|join:", " }}</p>
+            {% endif %}
+            <div class="mt-2 p-3 bg-slate-800/60 rounded-xl">
+              <p class="text-xs text-emerald-400"><span class="font-semibold">Uphold Appeal:</span> Reinstates student & dismisses the incident record.</p>
+              <p class="text-xs text-rose-400 mt-1"><span class="font-semibold">Reject Appeal:</span> Maintains the disciplinary penalty as confirmed.</p>
+            </div>
+          </div>
+
+          <!-- Admin Response -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Official Response *</label>
+            {{ form.admin_response }}
+            <p class="mt-1 text-xs text-slate-500">This response is shared with the student. Be professional and reference institutional policy.</p>
+            {% if form.admin_response.errors %}
+              <p class="mt-1 text-xs text-rose-400">{{ form.admin_response.errors|join:", " }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Non-field errors -->
+          {% if form.non_field_errors %}
+            <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+              {% for error in form.non_field_errors %}
+                <p class="text-xs text-rose-400">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Submit -->
+          <button type="submit"
+                  class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition flex items-center justify-center space-x-2">
+            <i data-lucide="gavel" class="w-4 h-4"></i>
+            <span>Submit Decision</span>
+          </button>
+
+          <a href="{% url 'admin_dashboard:discipline_list' %}"
+             class="block w-full py-3 text-center bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition">
+            Cancel — Review Later
+          </a>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

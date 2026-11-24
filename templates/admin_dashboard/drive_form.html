@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — PlacerAI Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Back -->
+    <div class="flex items-center space-x-2 text-xs text-slate-400">
+        <a href="{% url 'admin_dashboard:drives_list' %}" class="hover:text-indigo-400 flex items-center space-x-1">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Drives List</span>
+        </a>
+    </div>
+
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div>
+            <h1 class="text-xl font-extrabold text-white flex items-center space-x-2">
+                <i data-lucide="briefcase" class="w-5 h-5 text-indigo-400"></i>
+                <span>{{ title }}</span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Configure all placement drive parameters including eligibility cutoffs and required skills.</p>
+        </div>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Recruiting Company</label>
+                    {{ form.company }}
+                    {% if form.company.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.company.errors.0 }}</p>{% endif %}
+{% if form.company.value == 'other' %}
+<div class="mt-2">
+    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Other Company Name</label>
+    {{ form.other_company }}
+    {% if form.other_company.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.other_company.errors.0 }}</p>{% endif %}
+</div>
+{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Job Role / Designation</label>
+                    {{ form.job_role }}
+                    {% if form.job_role.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.job_role.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Full Job Title</label>
+                {{ form.job_title }}
+                {% if form.job_title.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.job_title.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Job Description</label>
+                {{ form.job_description }}
+                {% if form.job_description.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.job_description.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Required Technical Skills (Ctrl+Click for multiple)</label>
+                {{ form.required_skills }}
+                {% if form.required_skills.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.required_skills.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Eligible Branches (Comma-separated)</label>
+                {{ form.allowed_branches }}
+                {% if form.allowed_branches.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.allowed_branches.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Eligibility Cutoffs -->
+            <div class="p-4 bg-slate-950/60 rounded-xl border border-white/5 space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Mandatory Eligibility Cutoffs</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Minimum CGPA</label>
+                        {{ form.min_cgpa }}
+                        {% if form.min_cgpa.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.min_cgpa.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Max Active Backlogs</label>
+                        {{ form.max_backlogs }}
+                        {% if form.max_backlogs.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.max_backlogs.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Min Academic Score (0-100)</label>
+                        {{ form.required_academic_score }}
+                        {% if form.required_academic_score.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.required_academic_score.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Application Deadline</label>
+                    {{ form.application_deadline }}
+                    {% if form.application_deadline.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.application_deadline.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Drive / Assessment Date</label>
+                    {{ form.drive_date }}
+                    {% if form.drive_date.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.drive_date.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Salary Package (Optional)</label>
+                    {{ form.salary_package }}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Additional Requirements / Notes</label>
+                {{ form.additional_requirements }}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Drive Status</label>
+                    {{ form.status }}
+                </div>
+                <div class="flex items-center space-x-3 pt-6">
+                    {{ form.is_published }}
+                    <label class="text-sm text-slate-300 font-semibold cursor-pointer">
+                        Published (Visible to Students)
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-4 border-t border-white/5">
+                <a href="{% url 'admin_dashboard:drives_list' %}" class="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-xs hover:bg-slate-700">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/25 transition flex items-center space-x-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span>Save Drive</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

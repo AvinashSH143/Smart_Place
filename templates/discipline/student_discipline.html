@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Discipline Records & Appeals — PlacerAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Clearance / Debarment Status Banner -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-indigo-400 mb-1">
+                <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                <span>Conduct & Disciplinary Directorate</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Disciplinary Records & Appeals
+            </h1>
+            <p class="text-xs text-slate-400 max-w-2xl">
+                Confidential institutional conduct register. Only confirmed violations under university statutes impact campus recruitment eligibility.
+            </p>
+        </div>
+
+        <div class="p-4 bg-slate-950/60 rounded-xl border border-white/5 flex items-center space-x-4">
+            {% if student.is_debarred %}
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold">Placement Standing</div>
+                    <div class="text-rose-400 font-extrabold text-sm">Debarred / Restricted</div>
+                </div>
+            {% else %}
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold">Placement Standing</div>
+                    <div class="text-emerald-400 font-extrabold text-sm">Clear / Good Standing</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Institutional Rules Notice Box (Section 12 requirements) -->
+    <div class="bg-indigo-950/30 border border-indigo-500/20 rounded-2xl p-5 text-xs text-slate-300 space-y-2">
+        <div class="flex items-center space-x-2 text-indigo-300 font-bold">
+            <i data-lucide="info" class="w-4 h-4"></i>
+            <span>Disciplinary Due Process Guarantees</span>
+        </div>
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-400 text-[11px] pt-1">
+            <li class="flex items-start space-x-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                <span>Allegations do not automatically constitute confirmed violations.</span>
+            </li>
+            <li class="flex items-start space-x-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                <span>Disciplinary records are strictly private and never publicly disclosed.</span>
+            </li>
+            <li class="flex items-start space-x-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                <span>Academic evaluation marks are never silently altered or deducted.</span>
+            </li>
+            <li class="flex items-start space-x-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                <span>Students retain the statutory right to submit documented appeals for review.</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Incidents Table Card -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+            <i data-lucide="alert-octagon" class="w-4 h-4 text-indigo-400"></i>
+            <span>Documented Conduct Inquiries & Records</span>
+        </h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-white/10 text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-3">Incident Category</th>
+                        <th class="py-3 px-3">Date</th>
+                        <th class="py-3 px-3">Description & Findings</th>
+                        <th class="py-3 px-3">Hearing Status</th>
+                        <th class="py-3 px-3">Restrictions</th>
+                        <th class="py-3 px-3 text-right">Appeals</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-slate-300">
+                    {% for rec in records %}
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-4 px-3 font-bold text-white whitespace-nowrap">
+                                {{ rec.get_incident_category_display }}
+                            </td>
+                            <td class="py-4 px-3 text-slate-400 whitespace-nowrap">
+                                {{ rec.incident_date|date:"M d, Y" }}
+                            </td>
+                            <td class="py-4 px-3 max-w-sm">
+                                <div class="text-slate-200 line-clamp-2">{{ rec.description }}</div>
+                                {% if rec.admin_remarks %}
+                                    <div class="text-[10px] text-slate-400 mt-1 italic">
+                                        Board Notes: {{ rec.admin_remarks }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-3 whitespace-nowrap">
+                                {% if rec.status == 'CONFIRMED' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                        Confirmed Violation
+                                    </span>
+                                {% elif rec.status == 'DISMISSED' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Dismissed / Exonerated
+                                    </span>
+                                {% elif rec.status == 'APPEALED' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                        Under Appeal Review
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        Under Formal Review
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-3 text-xs max-w-xs">
+                                {% if rec.is_debarred %}
+                                    <span class="text-rose-400 font-semibold block text-[11px]">
+                                        {{ rec.placement_restrictions|default:"Debarred from placements." }}
+                                    </span>
+                                    {% if rec.debarment_end %}
+                                        <span class="text-[10px] text-slate-500">Until {{ rec.debarment_end|date:"M d, Y" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-slate-500 italic">None</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-3 text-right whitespace-nowrap">
+                                {% if rec.status == 'CONFIRMED' %}
+                                    <a href="{% url 'discipline:submit_appeal' rec.id %}" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition font-semibold text-xs">
+                                        Submit Appeal
+                                    </a>
+                                {% elif rec.status == 'APPEALED' %}
+                                    <span class="text-[11px] text-sky-400 font-medium">Appeal Pending</span>
+                                {% else %}
+                                    <span class="text-[11px] text-slate-500">--</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Sub-table for appeals under this record -->
+                        {% for appeal in rec.appeals.all %}
+                            <tr class="bg-slate-950/40">
+                                <td colspan="6" class="p-4 border-l-2 border-indigo-500">
+                                    <div class="text-xs space-y-1">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-bold text-white">Your Appeal Submission ({{ appeal.created_at|date:"M d, Y" }})</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold 
+                                                {% if appeal.status == 'APPROVED' %}bg-emerald-500/10 text-emerald-400
+                                                {% elif appeal.status == 'REJECTED' %}bg-rose-500/10 text-rose-400
+                                                {% else %}bg-amber-500/10 text-amber-400{% endif %}">
+                                                {{ appeal.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <p class="text-slate-300 text-[11px] italic">{{ appeal.appeal_statement }}</p>
+                                        {% if appeal.admin_response %}
+                                            <div class="pt-2 text-[11px] text-slate-400 border-t border-white/5">
+                                                <strong class="text-white">Official Board Response:</strong> {{ appeal.admin_response }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-500">
+                                No disciplinary incidents or conduct notices documented on your student record.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

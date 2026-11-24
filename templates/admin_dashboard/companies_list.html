@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Companies & Placement Drives — Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Header -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                <span>Corporate Partnership Registry</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Companies & Placement Drive Management
+            </h1>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'admin_dashboard:company_create' %}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold border border-white/10 transition flex items-center space-x-2">
+                <i data-lucide="plus" class="w-4 h-4 text-indigo-400"></i>
+                <span>Add Company</span>
+            </a>
+            <a href="{% url 'admin_dashboard:drive_create' %}" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/25 transition flex items-center space-x-2">
+                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                <span>Create Placement Drive</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Registered Companies -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+            <i data-lucide="building" class="w-4 h-4 text-indigo-400"></i>
+            <span>Registered Recruiting Companies ({{ companies.count }})</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for company in companies %}
+                <div class="bg-slate-950/60 border border-white/5 hover:border-indigo-500/30 rounded-xl p-5 transition space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-800 to-indigo-950 border border-white/10 flex items-center justify-center font-bold text-white text-sm">
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="w-full h-full object-cover rounded-xl">
+                            {% else %}
+                                {{ company.initials }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">{{ company.name }}</h4>
+                            <p class="text-[11px] text-slate-400">{{ company.industry }}</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{{ company.description }}</p>
+                    <div class="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                        <span class="text-slate-500">{{ company.drives_count }} drive{{ company.drives_count|pluralize }}</span>
+                        <div class="flex space-x-2">
+                            {% if company.website %}
+                                <a href="{{ company.website }}" target="_blank" class="text-slate-400 hover:text-white p-1 rounded">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'admin_dashboard:company_edit' company.id %}" class="px-2.5 py-1 bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-semibold border border-white/10 transition">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-3 text-center py-8 text-slate-500 text-xs">
+                    No companies registered yet.
+                    <a href="{% url 'admin_dashboard:company_create' %}" class="text-indigo-400 hover:underline ml-1">Add the first company &rarr;</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

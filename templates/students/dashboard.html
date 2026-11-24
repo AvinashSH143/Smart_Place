@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard — PlacerAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Debarment Alert Banner (if applicable) -->
+    {% if student.is_debarred %}
+        <div class="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-5 flex items-start space-x-4 text-rose-300">
+            <div class="p-2 bg-rose-500/20 rounded-xl flex-shrink-0 text-rose-400">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-base font-bold text-white">Active Campus Placement Restriction</h3>
+                <p class="text-xs text-rose-300 mt-1 leading-relaxed">
+                    {{ student.debarred_reason|default:"Your placement clearance is currently restricted under institutional disciplinary policy." }}
+                </p>
+                <div class="mt-3">
+                    <a href="{% url 'discipline:discipline_view' %}" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded-lg transition">
+                        <span>Review Disciplinary Record & Submit Appeal</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Header Section -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="space-y-2">
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                <span>Student Portal</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Welcome back, <span style="color: orange;">{{ student.full_name }}</span>
+            </h1>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-medium pt-1">
+                <span class="flex items-center space-x-1.5">
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-400"></i>
+                    <span>{{ student.branch }}</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+                    <span>{{ student.get_year_of_study_display }}</span>
+                </span>
+                <span class="flex items-center space-x-1.5">
+                    <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i>
+                    <span>CGPA: <strong class="text-white">{{ student.cgpa|floatformat:2 }}</strong></span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Profile Completion Card -->
+        <div class="w-full md:w-64 bg-slate-950/60 border border-white/10 rounded-xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-300 mb-2">
+                <span>Profile Completion</span>
+                <span class="text-indigo-400 font-bold">{{ student.profile_completion_percentage }}%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+               <div 
+  class="bg-gradient-to-r from-indigo-500 to-sky-400 h-2 rounded-full transition-all duration-500" 
+  data-width="{{ student.profile_completion_percentage }}"
+  id="profile-progress">
+</div>
+
+<script>
+  const bar = document.getElementById('profile-progress');
+  bar.style.width = bar.dataset.width + '%';
+</script>
+
+            <div class="mt-3 flex justify-between items-center text-[11px] text-slate-400">
+                <a href="{% url 'students:profile' %}" class="text-indigo-400 hover:text-indigo-300 font-medium flex items-center space-x-1">
+                    <span>Manage Details</span>
+                    <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Main Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Card 1: Academic Score -->
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 hover:border-indigo-500/30 transition shadow-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Academic Score</span>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                    <i data-lucide="award" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-baseline space-x-2">
+                <div class="text-3xl font-extrabold text-white">{{ student.academic_score }}</div>
+                <div class="text-xs text-slate-400">/ 100</div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+                Based on admin-evaluated submissions and CGPA.
+            </p>
+        </div>
+
+        <!-- Card 2: Verified Skills -->
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 hover:border-sky-500/30 transition shadow-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Verified Skills</span>
+                <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-baseline space-x-2">
+                <div class="text-3xl font-extrabold text-sky-400">{{ student.verified_skills_count }}</div>
+                <div class="text-xs text-slate-400">skills approved</div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+                Verified through project & credential audits.
+            </p>
+        </div>
+
+        <!-- Card 3: Placement Matches -->
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 hover:border-emerald-500/30 transition shadow-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Placement Matches</span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-baseline space-x-2">
+                <div class="text-3xl font-extrabold text-emerald-400">{{ satisfactory_matches_count }}</div>
+                <div class="text-xs text-slate-400">high potential drives</div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+                Eligible drives with match score &ge; 50%.
+            </p>
+        </div>
+
+        <!-- Card 4: Overall Strength -->
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 hover:border-indigo-500/30 transition shadow-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Overall Strength</span>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-baseline space-x-2">
+                <div class="text-3xl font-extrabold text-indigo-400">{{ strength_analysis.overall_strength }}%</div>
+                {% if strength_analysis.is_provisional %}
+                    <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md">Provisional</span>
+                {% endif %}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+                Weighted composite across assessed competency areas.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Middle Section: Radar Chart & Strength Analysis + Top Placement Matches -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Radar Chart Column (5 cols) -->
+        <div class="lg:col-span-5 bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="radar" class="w-4 h-4 text-indigo-400"></i>
+                        <span>Competency Radar Analysis</span>
+                    </h3>
+                    <span class="text-[11px] text-slate-400">5-Dimensions (0-100)</span>
+                </div>
+
+                <!-- Radar Canvas -->
+                <div class="relative w-full aspect-square max-h-[300px] flex items-center justify-center my-2">
+                    <canvas id="studentRadarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Strongest & Weakest Dimension Summary -->
+            <div class="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-3 text-xs">
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-white/5">
+                    <span class="text-[10px] uppercase font-bold text-emerald-400 flex items-center space-x-1">
+                        <i data-lucide="award" class="w-3 h-3"></i>
+                        <span>Strongest Dimension</span>
+                    </span>
+                    <div class="font-bold text-white mt-1">
+                        {{ strength_analysis.strongest_dimension.name|default:"Pending Assessment" }}
+                    </div>
+                    {% if strength_analysis.strongest_dimension %}
+                        <div class="text-emerald-400 font-semibold text-[11px] mt-0.5">
+                            {{ strength_analysis.strongest_dimension.score }} / 100
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-white/5">
+                    <span class="text-[10px] uppercase font-bold text-amber-400 flex items-center space-x-1">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i>
+                        <span>Area for Growth</span>
+                    </span>
+                    <div class="font-bold text-white mt-1">
+                        {{ strength_analysis.weakest_dimension.name|default:"Pending Assessment" }}
+                    </div>
+                    {% if strength_analysis.weakest_dimension %}
+                        <div class="text-amber-400 font-semibold text-[11px] mt-0.5">
+                            {{ strength_analysis.weakest_dimension.score }} / 100
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Recommended Placement Drives (7 cols) -->
+        <div class="lg:col-span-7 bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                            <span>Recommended Placement Drives</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Ranked by qualification match and mandatory eligibility.</p>
+                    </div>
+                    <a href="{% url 'companies:drives_list' %}" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1">
+                        <span>Browse All</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+
+                <!-- Drive Cards -->
+                <div class="space-y-4">
+                    {% for item in top_matches %}
+                        <div class="bg-slate-950/70 border border-white/5 hover:border-indigo-500/30 rounded-xl p-4 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1.5 flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ item.drive.company.name }}</span>
+                                    {% if item.is_eligible %}
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md">
+                                            Eligible
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-md">
+                                            Criteria Ineligible
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <h4 class="text-sm font-bold text-white hover:text-indigo-300 transition">
+                                    <a href="{% url 'companies:drive_detail' item.drive.id %}">{{ item.drive.job_title }}</a>
+                                </h4>
+                                <div class="flex flex-wrap items-center gap-x-3 text-xs text-slate-400">
+                                    <span class="flex items-center space-x-1">
+                                        <i data-lucide="calendar" class="w-3 h-3 text-slate-500"></i>
+                                        <span>Drive: {{ item.drive.drive_date|date:"M d, Y" }}</span>
+                                    </span>
+                                    {% if item.drive.salary_package %}
+                                        <span class="text-slate-300 font-medium">&bull; {{ item.drive.salary_package }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Match Score & CTA -->
+                            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-white/5">
+                                <div class="text-right">
+                                    <div class="text-lg font-extrabold 
+                                        {% if item.total_match >= 85 %}text-emerald-400
+                                        {% elif item.total_match >= 70 %}text-sky-400
+                                        {% elif item.total_match >= 50 %}text-amber-400
+                                        {% else %}text-rose-400{% endif %}">
+                                        {{ item.total_match }}%
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 font-medium">Match Score</div>
+                                </div>
+                                <a href="{% url 'companies:drive_detail' item.drive.id %}" class="sm:mt-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-8 text-slate-400 text-xs">
+                            No active placement drives currently scheduled.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/5 text-xs text-slate-400 flex items-center justify-between">
+                <span>Recommendations dynamically calculated based on verified skills and evaluations.</span>
+                <a href="{% url 'companies:drives_list' %}" class="text-indigo-400 font-semibold hover:underline">View All Drives &rarr;</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h3 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
+            <i data-lucide="activity" class="w-4 h-4 text-indigo-400"></i>
+            <span>Recent Activity & Updates</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+            
+            <!-- Column 1: Recently Evaluated Submissions -->
+            <div class="space-y-3">
+                <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Academic Submissions</span>
+                {% for sub in recent_submissions %}
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-white truncate max-w-[160px]">{{ sub.title }}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                                {% if sub.status == 'APPROVED' %}bg-emerald-500/10 text-emerald-400
+                                {% elif sub.status == 'PENDING' %}bg-amber-500/10 text-amber-400
+                                {% else %}bg-rose-500/10 text-rose-400{% endif %}">
+                                {{ sub.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="text-slate-400 flex justify-between">
+                            <span>{{ sub.created_at|date:"M d" }}</span>
+                            {% if sub.awarded_marks is not None %}
+                                <span class="font-bold text-indigo-400">{{ sub.awarded_marks }}/100</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-slate-500">No recent submissions found.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Column 2: Approved Skills -->
+            <div class="space-y-3">
+                <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Skill Verification Status</span>
+                {% for ss in recent_skills %}
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-white">{{ ss.skill.name }}</span>
+                            {% if ss.is_verified %}
+                                <span class="text-emerald-400 text-[11px] font-semibold flex items-center space-x-1">
+                                    <i data-lucide="check" class="w-3 h-3"></i>
+                                    <span>Verified</span>
+                                </span>
+                            {% else %}
+                                <span class="text-amber-400 text-[11px] font-semibold">Pending Audit</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-slate-400 text-[11px]">
+                            Proficiency: {{ ss.get_proficiency_display }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-slate-500">No skills declared yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Column 3: Newly Published Drives -->
+            <div class="space-y-3">
+                <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">New Placement Drives</span>
+                {% for d in recent_drives %}
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1">
+                        <div class="font-semibold text-white truncate">{{ d.job_title }}</div>
+                        <div class="text-slate-400 text-[11px] flex justify-between">
+                            <span>{{ d.company.name }}</span>
+                            <span class="text-indigo-400 font-medium">Drive: {{ d.drive_date|date:"M d" }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-slate-500">No recent drives.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Initialize Chart.js Radar Chart
+    document.addEventListener('DOMContentLoaded', () => {
+
+
+          const labels = JSON.parse('{{ radar_labels_json|escapejs }}');
+        const dataValues = JSON.parse('{{ radar_data_json|escapejs }}');
+
+        const ctx = document.getElementById('studentRadarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Competency Score',
+                    data: dataValues,
+                    backgroundColor: 'rgba(99, 102, 241, 0.25)',
+                    borderColor: 'rgba(99, 102, 241, 0.9)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#818cf8',
+                    pointBorderColor: '#ffffff',
+                    pointHoverBackgroundColor: '#ffffff',
+                    pointHoverBorderColor: '#818cf8',
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.08)',
+                        },
+                        pointLabels: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 10,
+                                family: 'Inter',
+                                weight: '500'
+                            }
+                        },
+                        ticks: {
+                            display: false,
+                            min: 0,
+                            max: 100,
+                            stepSize: 20
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                const val = context.raw;
+                                return val > 0 ? `Score: ${val}/100` : 'Not assessed yet';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

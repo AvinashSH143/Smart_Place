@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Placement Drives — PlacerAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Header -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                <span>Campus Recruitment Hub</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Corporate Placement Drives
+            </h1>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+                Explore campus opportunities tailored to your academic profile and verified skill portfolio.
+            </p>
+        </div>
+
+        <div class="text-xs text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-white/5 flex items-center space-x-3">
+            <div>
+                <span class="text-slate-500 block text-[10px] uppercase font-semibold">Total Opportunities</span>
+                <span class="text-white font-extrabold text-base">{{ total_drives_count }} Active Drives</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-4 shadow-xl">
+        <form method="GET" action="{% url 'companies:drives_list' %}" class="flex flex-col sm:flex-row gap-3 items-center">
+            <div class="relative flex-1 w-full">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search company, job title, or role..." class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs transition">
+            </div>
+
+            <div class="w-full sm:w-48">
+                <select name="status" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Drive Statuses</option>
+                    <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active Only</option>
+                    <option value="UPCOMING" {% if status_filter == 'UPCOMING' %}selected{% endif %}>Upcoming Only</option>
+                </select>
+            </div>
+
+            <div class="w-full sm:w-48">
+                <select name="eligibility" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all" {% if eligibility_filter == 'all' %}selected{% endif %}>All Eligibility</option>
+                    <option value="eligible" {% if eligibility_filter == 'eligible' %}selected{% endif %}>Eligible For Me</option>
+                    <option value="ineligible" {% if eligibility_filter == 'ineligible' %}selected{% endif %}>Ineligible For Me</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-1.5 flex-shrink-0">
+                <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                <span>Filter</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Drives Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in drive_matches %}
+            <div class="bg-slate-900 border border-white/10 hover:border-indigo-500/30 rounded-2xl p-6 shadow-xl transition flex flex-col justify-between group">
+                <div>
+                    <!-- Top Row: Company Avatar + Badges -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-slate-800 to-indigo-950 border border-white/10 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                                {% if item.drive.company.logo %}
+                                    <img src="{{ item.drive.company.logo.url }}" alt="{{ item.drive.company.name }}" class="w-full h-full object-cover rounded-xl">
+                                {% else %}
+                                    {{ item.drive.company.initials }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white group-hover:text-indigo-300 transition">
+                                    {{ item.drive.company.name }}
+                                </h3>
+                                <p class="text-[11px] text-slate-400">{{ item.drive.company.industry }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Match Badge -->
+                        <div class="text-right">
+                            <div class="px-2.5 py-1 rounded-lg text-xs font-extrabold 
+                                {% if item.total_match >= 85 %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                                {% elif item.total_match >= 70 %}bg-sky-500/10 text-sky-400 border border-sky-500/20
+                                {% elif item.total_match >= 50 %}bg-amber-500/10 text-amber-400 border border-amber-500/20
+                                {% else %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% endif %}">
+                                {{ item.total_match }}% Match
+                            </div>
+                            <div class="text-[9px] text-slate-500 mt-0.5">{{ item.classification }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Job Title & Role -->
+                    <div class="space-y-1 mb-4">
+                        <h4 class="text-base font-bold text-white">
+                            {{ item.drive.job_title }}
+                        </h4>
+                        <div class="text-xs text-indigo-400 font-medium">Role: {{ item.drive.job_role }}</div>
+                        <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed pt-1">
+                            {{ item.drive.job_description }}
+                        </p>
+                    </div>
+
+                    <!-- Drive Highlights -->
+                    <div class="space-y-2 py-3 border-t border-b border-white/5 text-xs text-slate-300">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Eligibility Cutoff:</span>
+                            <span class="font-semibold text-white">Min CGPA {{ item.drive.min_cgpa|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Salary Package:</span>
+                            <span class="font-semibold text-indigo-300">{{ item.drive.salary_package|default:"Not Disclosed" }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Application Deadline:</span>
+                            <span class="font-semibold text-white">{{ item.drive.application_deadline|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer: Eligibility Status + Action Button -->
+                <div class="mt-5 pt-2 flex items-center justify-between">
+                    <div>
+                        {% if item.is_eligible %}
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
+                                <i data-lucide="check" class="w-3 h-3"></i>
+                                <span>Eligible to Apply</span>
+                            </span>
+                        {% else %}
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center space-x-1" title="{{ item.eligibility.failed_reasons.0 }}">
+                                <i data-lucide="alert-octagon" class="w-3 h-3"></i>
+                                <span>Criteria Ineligible</span>
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'companies:drive_detail' item.drive.id %}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/25 transition flex items-center space-x-1">
+                        <span>View Details</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-3 text-center py-16 bg-slate-900 border border-white/10 rounded-2xl text-slate-400 text-xs">
+                No placement drives match your active filter criteria. Try adjusting your search query.
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

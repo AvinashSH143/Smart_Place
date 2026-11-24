@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Deletion — PlacerAI Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-slate-900 border border-rose-500/30 rounded-2xl p-8 shadow-2xl space-y-6 text-center">
+        <div class="w-16 h-16 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center mx-auto">
+            <i data-lucide="trash-2" class="w-8 h-8"></i>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-extrabold text-white">Confirm Permanent Deletion</h2>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                You are about to permanently delete:
+            </p>
+            <p class="text-sm font-bold text-rose-300 mt-2">{{ object_name }}</p>
+        </div>
+
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300 text-left">
+            <strong>Warning:</strong> This action cannot be undone. All associated data, student match records, and history will be permanently removed.
+        </div>
+
+        <div class="flex justify-center space-x-4">
+            <a href="{{ cancel_url }}" class="px-6 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-700">
+                Cancel — Do Not Delete
+            </a>
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-rose-600/25 transition">
+                    Yes, Permanently Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

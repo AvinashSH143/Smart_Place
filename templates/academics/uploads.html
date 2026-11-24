@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Academic Uploads & Evaluation — PlacerAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Header with Action -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+                <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                <span>Academic Verification Hub</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Academic Uploads & Evaluations
+            </h1>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+                Submit academic certificates, capstone projects, and skill credentials for official administrative evaluation and score verification.
+            </p>
+        </div>
+
+        <button type="button" onclick="document.getElementById('upload-modal').classList.remove('hidden')" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/25 transition flex items-center space-x-2 self-start md:self-auto">
+            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+            <span>Upload New Document</span>
+        </button>
+    </div>
+
+    <!-- 4 Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Submissions</span>
+            <div class="text-2xl font-extrabold text-white mt-2">{{ total_submissions }}</div>
+            <span class="text-[11px] text-slate-500">All categories</span>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved</span>
+            <div class="text-2xl font-extrabold text-emerald-400 mt-2">{{ approved_count }}</div>
+            <span class="text-[11px] text-emerald-400/80">Contribute to Academic Score</span>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Review</span>
+            <div class="text-2xl font-extrabold text-amber-400 mt-2">{{ pending_count }}</div>
+            <span class="text-[11px] text-amber-400/80">Under admin audit</span>
+        </div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-5">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Action Required</span>
+            <div class="text-2xl font-extrabold text-rose-400 mt-2">{{ needs_action_count }}</div>
+            <span class="text-[11px] text-rose-400/80">Resubmissions / Incomplete</span>
+        </div>
+    </div>
+
+    <!-- Submissions Table List -->
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i>
+            <span>Uploaded Submissions & Rubric Results</span>
+        </h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="border-b border-white/10 text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-4">Title & Details</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-center">Awarded Marks</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-slate-300">
+                    {% for sub in submissions %}
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-4 px-4">
+                                <div class="font-bold text-white text-sm">{{ sub.title }}</div>
+                                <div class="text-[11px] text-slate-400 line-clamp-1 max-w-sm mt-0.5">
+                                    {{ sub.description }}
+                                </div>
+                                {% if sub.related_skill %}
+                                    <div class="mt-1">
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                                            Skill: {{ sub.related_skill.name }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-4 whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 border border-white/5">
+                                    {{ sub.get_category_display }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-4 whitespace-nowrap text-slate-400">
+                                {{ sub.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="py-4 px-4 whitespace-nowrap">
+                                {% if sub.status == 'APPROVED' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center w-max space-x-1">
+                                        <i data-lucide="check" class="w-3 h-3"></i>
+                                        <span>Approved</span>
+                                    </span>
+                                {% elif sub.status == 'PENDING' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center w-max space-x-1">
+                                        <i data-lucide="clock" class="w-3 h-3"></i>
+                                        <span>Pending Review</span>
+                                    </span>
+                                {% elif sub.status == 'RESUBMISSION' %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center w-max space-x-1">
+                                        <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                        <span>Resubmission Req</span>
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center w-max space-x-1">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                        <span>Rejected</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-4 text-center whitespace-nowrap">
+                                {% if sub.awarded_marks is not None %}
+                                    <span class="text-base font-extrabold text-white">{{ sub.awarded_marks }}</span>
+                                    <span class="text-slate-500 text-[10px]">/ 100</span>
+                                {% else %}
+                                    <span class="text-slate-500 italic">--</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-4 text-right whitespace-nowrap space-x-2">
+                                <a href="{% url 'academics:secure_download' sub.id %}" class="inline-flex items-center space-x-1 text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-800 border border-white/5 transition" title="Download Document">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    <span>File</span>
+                                </a>
+                                <a href="{% url 'academics:submission_detail' sub.id %}" class="inline-flex items-center space-x-1 text-indigo-400 hover:text-indigo-300 font-semibold px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 transition">
+                                    <span>Rubric & Feedback</span>
+                                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-500">
+                                No academic documents uploaded yet. Click "Upload New Document" to submit certificates or projects.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i>
+                <span>Submit Academic Document for Audit</span>
+            </h3>
+            <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'academics:uploads' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Submission Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Category</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.category.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Related Skill (Optional)</label>
+                    {{ form.related_skill }}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Detailed Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.description.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Supporting Document (PDF, JPG, PNG, DOCX — Max 5MB)
+                </label>
+                {{ form.file }}
+                {% if form.file.errors %}<p class="text-xs text-rose-400 mt-1">{{ form.file.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t border-white/5">
+                <button type="button" onclick="document.getElementById('upload-modal').classList.add('hidden')" class="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-xs font-medium hover:bg-slate-700">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-500 shadow-lg shadow-indigo-600/25">
+                    Submit for Review
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
